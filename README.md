@@ -1,9 +1,7 @@
-
 PNG.js
 ======
 
-PNG.js is a PNG decoder fully written in JavaScript. It works in Deno as
-well as in (modern) browsers.
+PNG.js is a PNG decoder fully written in JavaScript. It works in Deno and browsers.
 
 Usage
 -----
