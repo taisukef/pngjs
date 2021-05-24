@@ -1,12 +1,6 @@
 /*global Uint8Array:true ArrayBuffer:true */
-"use strict";
-
-var zlib = require('zlib');
-var PNG = require('./PNG');
-
-var inflate = function(data, callback){
-	return zlib.inflate(new Buffer(data), callback);
-};
+import { inflate } from "https://taisukef.github.io/zlib.js/es/inflate.js";
+import { PNG } from "./PNG.js";
 
 var slice = Array.prototype.slice;
 var toString = Object.prototype.toString;
@@ -40,8 +34,8 @@ function bufferToString(buffer){
 	return str;
 }
 
-var PNGReader = function(bytes){
-
+var PNGReader = function(bytes) { // Uint8Array
+	/*
 	if (typeof bytes == 'string'){
 		var bts = bytes;
 		bytes = new Array(bts.length);
@@ -52,7 +46,7 @@ var PNGReader = function(bytes){
 		var type = toString.call(bytes).slice(8, -1);
 		if (type == 'ArrayBuffer') bytes = new Uint8Array(bytes);
 	}
-
+	*/
 	// current pointer
 	this.i = 0;
 	// bytes buffer
@@ -182,32 +176,23 @@ PNGReader.prototype.decodeIEND = function(){
 /**
  * Uncompress IDAT chunks
  */
-PNGReader.prototype.decodePixels = function(callback){
+PNGReader.prototype.decodePixels = function() {
 	var png = this.png;
 	var reader = this;
 	var length = 0;
 	var i, j, k, l;
 	for (l = this.dataChunks.length; l--;) length += this.dataChunks[l].length;
-	var data = new Buffer(length);
+	var data = new Uint8Array(length);
 	for (i = 0, k = 0, l = this.dataChunks.length; i < l; i++){
 		var chunk = this.dataChunks[i];
 		for (j = 0; j < chunk.length; j++) data[k++] = chunk[j];
 	}
-	inflate(data, function(err, data){
-		if (err) return callback(err);
-
-		try {
-			if (png.getInterlaceMethod() === 0){
-				reader.interlaceNone(data);
-			} else {
-				reader.interlaceAdam7(data);
-			}
-		} catch (e){
-			return callback(e);
-		}
-
-		callback();
-	});
+	const data2 = inflate(data);
+	if (png.getInterlaceMethod() === 0){
+		reader.interlaceNone(data2);
+	} else {
+		reader.interlaceAdam7(data2);
+	}
 };
 
 // Different interlace methods
@@ -222,7 +207,7 @@ PNGReader.prototype.interlaceNone = function(data){
 	// color bytes per row
 	var cpr = bpp * png.width;
 
-	var pixels = new Buffer(bpp * png.width * png.height);
+	var pixels = new Uint8Array(bpp * png.width * png.height);
 	var scanline;
 	var offset = 0;
 
@@ -396,31 +381,20 @@ PNGReader.prototype.unFilterPaeth = function(scanline, pixels, bpp, of, length){
  *    ----------------------------
  *    data      boolean    true    should it read the pixel data
  */
-PNGReader.prototype.parse = function(options, callback){
-
-	if (typeof options == 'function') callback = options;
+PNGReader.prototype.parse = function(options) {
 	if (typeof options != 'object') options = {};
 
-	try {
+	this.decodeHeader();
 
-		this.decodeHeader();
-
-		while (this.i < this.bytes.length){
-			var type = this.decodeChunk();
-			// stop after IHDR chunk, or after IEND
-			if (type == 'IHDR' && options.data === false || type == 'IEND') break;
-		}
-
-		var png = this.png;
-
-		this.decodePixels(function(err){
-			callback(err, png);
-		});
-
-	} catch (e){
-		callback(e);
+	while (this.i < this.bytes.length){
+		var type = this.decodeChunk();
+		// stop after IHDR chunk, or after IEND
+		if (type == 'IHDR' && options.data === false || type == 'IEND') break;
 	}
+	var png = this.png;
 
+	this.decodePixels();
+	return png;
 };
 
-module.exports = PNGReader;
+export { PNGReader };

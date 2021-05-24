@@ -1,5 +1,3 @@
-"use strict";
-
 var PNG = function(){
 
 	// initialize all members to keep the same hidden class
@@ -171,11 +169,11 @@ PNG.prototype.getPixel = function(x, y){
  * get the pixels of the image as a RGBA array of the form [r1, g1, b1, a1, r2, b2, g2, a2, ...]
  * Matches the api of canvas.getImageData
  */
-PNG.prototype.getRGBA8Array = function(){
-	var data = new Array(this.width * this.height * 4);
-	for (var y = 0; y < this.height; y++) {
-		for (var x = 0; x < this.width; x++) {
-			var pixelData = this.getPixel(x, y);
+PNG.prototype.getRGBA8Array = function() {
+	const data = new Uint8ClampedArray(this.width * this.height * 4);
+	for (let y = 0; y < this.height; y++) {
+		for (let x = 0; x < this.width; x++) {
+			const pixelData = this.getPixel(x, y);
 
 			data[(y * this.width + x) * 4 + 0] = pixelData[0];
 			data[(y * this.width + x) * 4 + 1] = pixelData[1];
@@ -186,4 +184,4 @@ PNG.prototype.getRGBA8Array = function(){
 	return data;
 };
 
-module.exports = PNG;
+export { PNG };
