@@ -18,4 +18,11 @@ const decodePNG = (bin) => { // Uint8Array(png) -> ImageData
   return imageData;
 };
 
-export { decodePNG };
+const decodePNGs = (bin) => { // Uint8Array(png) -> ImageData
+  const reader = new PNGReader(bin);
+  const pngs = reader.parseMulti();
+  const imgdatas = pngs.map(png => new ImageData(png.getRGBA8Array(), png.width, png.height));
+  return imgdatas;
+};
+
+export { decodePNG, decodePNGs };

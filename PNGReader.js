@@ -111,6 +111,7 @@ PNGReader.prototype.decodeChunk = function(){
 		case 'IHDR': this.decodeIHDR(chunk); break;
 		case 'PLTE': this.decodePLTE(chunk); break;
 		case 'IDAT': this.decodeIDAT(chunk); break;
+		case 'fdAT': this.decodeIDAT(chunk); break;
 		case 'tRNS': this.decodeTRNS(chunk); break;
 		case 'IEND': this.decodeIEND(chunk); break;
 	}
@@ -388,13 +389,32 @@ PNGReader.prototype.parse = function(options) {
 
 	while (this.i < this.bytes.length){
 		var type = this.decodeChunk();
+		const b = type == 'IHDR' && options.data === false || type == 'IEND';
 		// stop after IHDR chunk, or after IEND
-		if (type == 'IHDR' && options.data === false || type == 'IEND') break;
+		//if (type == 'IHDR' && options.data === false || type == 'IEND') break;
 	}
 	var png = this.png;
 
 	this.decodePixels();
 	return png;
+};
+
+PNGReader.prototype.parseMulti = function() {
+	this.decodeHeader();
+
+	const res = [];
+	while (this.i < this.bytes.length){
+		var type = this.decodeChunk();
+		if (type == 'fcTL' || type == 'IEND' || type == 'END') {
+			try {
+				this.decodePixels();
+				res.push(this.png);
+			} catch (e) {
+				//console.log(e);
+			}
+		}
+	}
+	return res;
 };
 
 export { PNGReader };
