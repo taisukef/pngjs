@@ -408,16 +408,15 @@ PNGReader.prototype.parseMulti = function() {
 
 	const res = [];
 	while (this.i < this.bytes.length){
-		var type = this.decodeChunk();
+		const type = this.decodeChunk();
 		if (type == 'fcTL' || type == 'IEND' || type == 'END') {
 			if (this.dataChunks.length == 0) continue;
-			try {
-				this.decodePixels();
-				res.push(this.png);
-				this.dataChunks = [];
-			} catch (e) {
-				console.log(e);
-			}
+			this.decodePixels();
+			res.push(this.png);
+
+			// renew png
+			this.png = this.png.createSameClass();
+			this.dataChunks = [];
 		}
 	}
 	return res;

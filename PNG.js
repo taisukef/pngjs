@@ -184,4 +184,19 @@ PNG.prototype.getRGBA8Array = function() {
 	return data;
 };
 
+PNG.prototype.createSameClass = function() {
+	const res = new PNG();
+	res.width = this.width;
+	res.height = this.height;
+	res.bitDepth = this.bitDepth;
+	res.colorType = this.colorType;
+	res.compressionMethod = this.compressionMethod;
+	res.filterMethod = this.filterMethod;
+	res.interlaceMethod = this.interlaceMethod;
+	res.colors = this.colors;
+	res.alpha = this.alpha;
+	res.pixelBits = this.pixelBits;
+	return res;
+};
+
 export { PNG };
